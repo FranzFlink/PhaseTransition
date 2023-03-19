@@ -65,7 +65,7 @@ def measure_system_2D(L, p):
 
 p_range = np.linspace(0, 1, 100)
 
-list_L = [100, 200, 300, 400, 500]
+list_L = [100, 200 ]
 
 p_crit = 0.59274
 

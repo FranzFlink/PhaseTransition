@@ -9,31 +9,36 @@ function site_percolation(L, p)
     Returns the percolation map and the number of clusters.
     """
     # Generate a lattice with random site occupation probabilities
-    lattice = rand(Float64, L, L) .< p
+    lattice = rand(Float64, L, L, L) .< p
     
     # Initialize the label array
-    labels = zeros(Int64, L, L)
+    labels = zeros(Int64, L, L, L)
 
     # Assign labels to the clusters
     label = 1
     for i in 1:L
         for j in 1:L
-            if lattice[i, j]
-                neighbors = []
-                if i > 1 && lattice[i-1, j]
-                    push!(neighbors, labels[i-1, j])
-                end
-                if j > 1 && lattice[i, j-1]
-                    push!(neighbors, labels[i, j-1])
-                end
-                if isempty(neighbors)
-                    labels[i, j] = label
-                    label += 1
-                else
-                    neighbors = unique(neighbors)
-                    labels[i, j] = neighbors[1]
-                    for neighbor in neighbors[2:end]
-                        labels[labels .== neighbor] .= labels[i, j]
+            for k in 1:L
+                if lattice[i, j, k]
+                    neighbors = []
+                    if i > 1 && lattice[i-1, j, k]
+                        push!(neighbors, labels[i-1, j, k])
+                    end
+                    if j > 1 && lattice[i, j-1, k]
+                        push!(neighbors, labels[i, j-1, k])
+                    end
+                    if k > 1 && lattice[i, j, k-1]
+                        push!(neighbors, labels[i, j, k-1])
+                    end
+                    if isempty(neighbors)
+                        labels[i, j, k] = label
+                        label += 1
+                    else
+                        neighbors = unique(neighbors)
+                        labels[i, j, k] = neighbors[1]
+                        for neighbor in neighbors[2:end]
+                            labels[labels .== neighbor] .= labels[i, j, k]
+                        end 
                     end
                 end
             end
@@ -46,7 +51,7 @@ end
 
 
 
-function measure_system_2D(L::Int, p_range::AbstractVector{Float64})
+function measure_system_3D(L::Int, p_range::AbstractVector{Float64})
     """
     Measures the basic quantities of the 2D site percolation system with lattice size L
     for site occupation probabilities in the range p_range.
@@ -79,15 +84,15 @@ end
 
 
 list_L = range(10, stop=1000, step=10)
-p_crit = 0.59274
 
-p_range = range(0.0, 1.0, length=100)
+p_range = range(0.25, 0.35, length=100)
 
 # Run the simulation for each L in list_L and save the results to file
 for L in list_L
     @time begin
-        output_file = "../PhaseTransitions/julia_txt/percolation_2d_$(L).txt"
-        res = measure_system_2D(L, p_range)
+        output_file = "../PhaseTransitions/julia_txt/percolation_3d_$(L).txt"
+        res = measure_system_3D(L, p_range)
         writedlm(output_file, res, ',')
+        println("Finished L = $L")
     end 
 end
